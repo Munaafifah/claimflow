@@ -1,0 +1,155 @@
+# Open in VS Code with REST Client and use Send Request above each request.
+# Run top to bottom. The named POST requests supply the IDs for later requests.
+# To repeat a scenario, start again at its POST to create a fresh claim.
+
+@baseUrl = http://127.0.0.1:8080/api
+@motorClaimant = claimant-1
+@propertyClaimant = claimant-2
+@motorOfficer = officer-1
+@propertyOfficer = officer-2
+
+### Motor 1 — Submit a rear-end collision claim. Expect 201 SUBMITTED.
+# @name submitMotor
+POST {{baseUrl}}/claims
+X-Demo-User-Id: {{motorClaimant}}
+Content-Type: application/json
+
+{
+  "type": "MOTOR",
+  "market": "MY",
+  "incidentDate": "2025-10-14",
+  "description": "A car struck the rear bumper while I was stopped at a traffic light.",
+  "requestedAmount": "2400.00",
+  "currency": "MYR"
+}
+
+### Motor 2 — List my claims. Expect 200 and the new motor claim in the list.
+GET {{baseUrl}}/claims
+X-Demo-User-Id: {{motorClaimant}}
+
+### Motor 3 — Find the claim in the officer queue. Expect 200 and the submitted claim.
+GET {{baseUrl}}/claims?status=SUBMITTED
+X-Demo-User-Id: {{motorOfficer}}
+
+### Motor 4 — Try reading as another claimant. Expect 404.
+GET {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}
+X-Demo-User-Id: {{propertyClaimant}}
+
+### Motor 5 — Pick up the claim. Expect 200 UNDER_REVIEW, assigned to officer-1.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"PICK_UP"}
+
+### Motor 6 — Filter the officer's workload. Expect 200 and the motor claim.
+GET {{baseUrl}}/claims?status=UNDER_REVIEW&officerId={{motorOfficer}}
+X-Demo-User-Id: {{motorOfficer}}
+
+### Motor 7 — Try picking up the same claim again as a second officer. Expect 409.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{propertyOfficer}}
+Content-Type: application/json
+
+{"action":"PICK_UP"}
+
+### Motor 8 — Try asking for information as the unassigned officer. Expect 403.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{propertyOfficer}}
+Content-Type: application/json
+
+{"action":"REQUEST_INFO","message":"What does the repair estimate cover?"}
+
+### Motor 9 — Request supporting details as the assigned officer. Expect 200 INFO_REQUIRED.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"REQUEST_INFO","message":"Please provide the repair estimate breakdown."}
+
+### Motor 10 — Read the officer's question as the claimant. Expect 200 INFO_REQUIRED.
+GET {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}
+X-Demo-User-Id: {{motorClaimant}}
+
+### Motor 11 — Reply with the estimate details. Expect 200 INFO_RECEIVED.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorClaimant}}
+Content-Type: application/json
+
+{"action":"SUPPLY_INFO","message":"The workshop quoted MYR 1600 for parts and MYR 800 for labour."}
+
+### Motor 12 — Resume the review. Expect 200 UNDER_REVIEW.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"RESUME_REVIEW"}
+
+### Motor 13 — Try approving more than requested. Expect 400. The claim remains UNDER_REVIEW.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"APPROVE","approvedAmount":"2500.00","message":"Assessment complete."}
+
+### Motor 14 — Approve the covered repairs. Expect 200 APPROVED with approvedAmount "2200".
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"APPROVE","approvedAmount":"2200.00","message":"Approved the covered parts and labour after applying the MYR 200 excess."}
+
+### Motor 15 — Read the decision as the claimant. Expect 200 APPROVED with the reason in history.
+GET {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}
+X-Demo-User-Id: {{motorClaimant}}
+
+### Motor 16 — Record settlement. Expect 200 SETTLED.
+POST {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"SETTLE"}
+
+### Motor 17 — Check the final status and history. Expect 200 SETTLED and seven entries.
+GET {{baseUrl}}/claims/{{submitMotor.response.body.$.id}}
+X-Demo-User-Id: {{motorClaimant}}
+
+### Property 1 — Submit a water damage claim. Expect 201 SUBMITTED.
+# @name submitProperty
+POST {{baseUrl}}/claims
+X-Demo-User-Id: {{propertyClaimant}}
+Content-Type: application/json
+
+{
+  "type": "PROPERTY",
+  "market": "SG",
+  "incidentDate": "2025-11-03",
+  "description": "A gradual leak from a kitchen pipe damaged the lower cabinets.",
+  "requestedAmount": "1800.00",
+  "currency": "SGD"
+}
+
+### Property 2 — Pick up the claim. Expect 200 UNDER_REVIEW, assigned to officer-2.
+POST {{baseUrl}}/claims/{{submitProperty.response.body.$.id}}/actions
+X-Demo-User-Id: {{propertyOfficer}}
+Content-Type: application/json
+
+{"action":"PICK_UP"}
+
+### Property 3 — Record a rejection. Expect 200 REJECTED.
+POST {{baseUrl}}/claims/{{submitProperty.response.body.$.id}}/actions
+X-Demo-User-Id: {{propertyOfficer}}
+Content-Type: application/json
+
+{"action":"REJECT","message":"The demo policy excludes damage from gradual leakage."}
+
+### Property 4 — Read the rejection as the claimant. Expect 200 REJECTED with the reason in history.
+GET {{baseUrl}}/claims/{{submitProperty.response.body.$.id}}
+X-Demo-User-Id: {{propertyClaimant}}
+
+### Property 5 — Try settling a rejected claim. Expect 409.
+POST {{baseUrl}}/claims/{{submitProperty.response.body.$.id}}/actions
+X-Demo-User-Id: {{propertyOfficer}}
+Content-Type: application/json
+
+{"action":"SETTLE"}

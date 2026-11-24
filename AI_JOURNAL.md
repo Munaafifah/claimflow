@@ -14,3 +14,10 @@
 - **Candidate direction** — The candidate asked to start with the backend. No specific implementation choice, challenge or override was stated.
 - **AI implementation choices** — Used fixed demo identities and an ordered history collection to keep this first slice small. Added optimistic locking so competing officer pickups cannot both succeed. Retained the proposed status transitions.
 - **Verification and outcome** — Maven initially could not create its default repository under the sandbox. The build succeeded after using the existing Maven cache with permission. The wrapper's `verify` target passed three integration tests and built an executable JAR. A local HTTP smoke test used file-backed H2 and confirmed submission, pickup and two history entries.
+
+## 24 November 2026, 15:50 MYT · Manual API examples
+
+- **Actual request** — “create one http files so that i can test the endpoint for each, also provide me samples to actually test the system”
+- **AI implementation choices** — Used one REST Client file with a motor claim that reaches settlement, a property claim that is rejected, and examples of rejected requests. Named submission requests supply IDs so the examples can be repeated with fresh claims.
+- **Candidate decisions** — The candidate requested one file with runnable samples. No additional challenges or overrides were stated.
+- **Verification and outcome** — Sent all 22 requests from the file to the packaged application on a temporary local port with in-memory H2. All expected HTTP status codes matched. Also checked the workflow states, list results, approved amount and final history lengths.

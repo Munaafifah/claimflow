@@ -14,6 +14,10 @@ cd backend
 
 The API listens on `http://127.0.0.1:8080`. The application writes data to `backend/data` when started as shown. Tests use an in-memory H2 database.
 
+Open [claimflow.http](claimflow.http) in VS Code with the REST Client extension. Click **Send Request** in order within each scenario. The motor scenario covers information requests, approval and settlement. The property scenario covers rejection. Each example lists its expected response, and the two submit requests supply claim IDs automatically.
+
+You can also submit and pick up a claim from PowerShell.
+
 ```powershell
 $body = @{
     type = 'MOTOR'
