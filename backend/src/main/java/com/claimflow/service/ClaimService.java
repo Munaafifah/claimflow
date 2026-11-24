@@ -4,6 +4,7 @@ import com.claimflow.dto.ClaimContracts.*;
 import com.claimflow.entity.Claim;
 import com.claimflow.entity.Claim.Action;
 import com.claimflow.entity.Claim.Status;
+import com.claimflow.event.ClaimOutbox;
 import com.claimflow.repository.ClaimRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,11 @@ import static com.claimflow.service.DemoActors.isOfficer;
 @Transactional(readOnly = true)
 public class ClaimService {
     private final ClaimRepository claims;
+    private final ClaimOutbox outbox;
 
-    public ClaimService(ClaimRepository claims) {
+    public ClaimService(ClaimRepository claims, ClaimOutbox outbox) {
         this.claims = claims;
+        this.outbox = outbox;
     }
 
     @Transactional
@@ -35,7 +38,9 @@ public class ClaimService {
         BigDecimal requested = money(request.requestedAmount(), request.currency());
         Claim claim = new Claim(actor, request.type(), request.market(), request.incidentDate(),
                 request.description().strip(), request.currency(), requested, Instant.now());
-        return View.from(claims.save(claim), true);
+        claims.save(claim);
+        outbox.record(claim, "CLAIM_SUBMITTED");
+        return View.from(claim, true);
     }
 
     public List<View> list(String actor, Status status, String officerId) {
@@ -84,6 +89,7 @@ public class ClaimService {
         }
         claim.progress(action, actor, message == null ? null : message.strip(), approved, Instant.now());
         claims.flush();
+        outbox.recordAction(claim, action);
         return View.from(claim, true);
     }
 

@@ -6,7 +6,7 @@ REST handles queries and commands because the caller needs the committed state o
 
 The dashboard uses one read-only repository query to fetch claims and their history together. The service calculates the current snapshot and historical outcomes in memory, which keeps the business rules visible and avoids a query per claim. This works for the local demo dataset. Larger datasets would benefit from database-side aggregation and a query restricted to outcome events in the selected period.
 
-If Kafka is implemented, save an outbox row in the same transaction as the claim and history. A single local publisher retries pending rows and marks them published after broker acknowledgement. A crash between acknowledgement and marking can produce a duplicate, so consumers use the event ID for deduplication. Key messages by claim ID and publish pending events in sequence for each claim. The claim API remains usable during a Kafka outage. Run Kafka through Docker Compose when testing event delivery.
+The claim transaction saves an outbox row alongside the claim and history for each published milestone. A single publisher in the Kafka profile retries the oldest pending event per claim and marks it published after broker acknowledgement. A crash between acknowledgement and marking can produce a duplicate. The demo notification consumer inserts a durable record keyed by event ID, so replay cannot create a second notification. The claim API remains usable during a Kafka outage.
 
 Use seeded demo actors. Every backend operation checks the applicable role, claimant ownership and staff assignment. The actor selector represents an identity supplied by the caller and provides no authentication. Keep this local and use fictional data.
 
@@ -19,4 +19,5 @@ The first backend milestone uses fixed demo actor IDs in the service and maps hi
 | User | ID, display name, role. One claimant can submit many claims and one officer can hold many assignments. |
 | Claim | ID, claimant ID, nullable assigned officer ID, type, market, incident date, description, currency, requested amount, nullable approved amount, status, UTC creation and update times, version. Use optimistic locking to turn concurrent stale writes into a conflict. |
 | Claim history | ID, claim ID, actor ID, action, optional previous status, new status, claimant-visible message, UTC timestamp. Multiple append-only rows per claim, written with the state change. |
-| Event outbox | Event ID, claim ID, claim version, event type, serialized payload, occurrence time, publication time. Added with Kafka integration. |
+| Event outbox | Event ID, claim ID, history sequence, event type, resulting status, occurrence time, nullable publication time. |
+| Demo notification | Event ID as primary key, claim ID and event type. Stores one record per claimant-facing event. |

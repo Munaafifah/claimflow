@@ -39,3 +39,17 @@
 - **Candidate decision** — Approved the dashboard design and asked to proceed. No overrides were stated.
 - **AI implementation choices** — Added the dedicated dashboard controller, service and response contracts. Shared the fixed actor IDs with the claim service so both endpoints apply the same demo roles. Used one read-only fetch query and preserved the existing database schema and lifecycle.
 - **Verification and outcome** — All seven integration tests passed. Maven initially failed to repackage the workspace JAR because Windows reported it was in use. A fresh temporary build passed `verify` and produced an executable JAR. Replayed all 27 HTTP examples against that JAR over localhost with in-memory H2. The dashboard totals, currency exposure, date filter and expected error responses matched.
+
+## 24 November 2026, 16:20 MYT · Dashboard recheck and Kafka design
+
+- **Candidate proposal** — Recheck the reporting rules and rerun the tests. Keep synchronous operations on REST and the modular monolith. Use Docker Compose for Kafka and consider lifecycle events for asynchronous claimant notifications. Review the design before implementation.
+- **AI recommendation** — Use one topic keyed by claim ID and publish the seven proposed milestones, with the notification consumer selecting claimant-relevant types. Use a small transactional outbox with a single publisher, per-claim sequence and stable event IDs. Treat delivery as at least once and deduplicate at the consumer.
+- **Trade-off discussed** — An after-commit send avoids publishing rolled-back changes but can lose events during broker or application failure. An outbox adds a table, retry logic and cleanup. Assignment and information-received events are optional if the only consumer is claimant-facing.
+- **Verification and outcome** — Reviewed the reporting implementation and reran Maven tests in a temporary copy. All seven passed, including four dashboard tests. Kafka implementation and design approval are pending.
+
+## 24 November 2026, 16:33 MYT · Kafka implementation
+
+- **Candidate decision** — Approved the modular monolith, one topic keyed by claim ID, all seven lifecycle events, a transactional outbox, a payload without sensitive claimant information, and stable event IDs for deduplication. The candidate initially considered publishing after a successful update, then chose durable retries to handle broker outages. Requested a simple implementation and manual review before committing or pushing.
+- **AI implementation choices** — Used a single scheduled publisher behind the opt-in Kafka profile. The history position provides the per-claim sequence, so resume review leaves a gap. The local consumer records the five claimant-facing event types and uses the event ID as the notification table's primary key.
+- **Verification** — Maven `verify` passed all ten tests in an isolated build. The three Kafka-related tests cover rollback and invalid transitions, ordered retry with a stable event ID, and a single database record after duplicate delivery.
+- **Broker check** — Replayed all 27 HTTP examples with the Kafka profile, in-memory H2 and a separate Docker Compose project. The console consumer received ten expected records across all seven types. With Kafka stopped, submission and assignment still succeeded. Restarting Kafka published both pending events in order. Replaying the submission with the same event ID logged a duplicate and produced no second notification.

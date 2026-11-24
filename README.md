@@ -35,4 +35,4 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8080/api/claims/$($claim.i
 
 Demo identities are `claimant-1`, `claimant-2`, `officer-1`, and `officer-2`. The header is caller-controlled and provides no authentication. Use fictional information.
 
-Kafka and Angular are planned milestones. See [the API contract](docs/API.md) and [the architecture proposal](docs/ARCHITECTURE.md).
+The backend records claim events in a transactional outbox. Enable the `kafka` Spring profile to publish pending events and record local demo notifications. See [Kafka setup and manual verification](docs/KAFKA.md). Angular is the next milestone. See [the API contract](docs/API.md) and [the architecture](docs/ARCHITECTURE.md).

@@ -1,6 +1,8 @@
 # Open in VS Code with REST Client and use Send Request above each request.
 # Run top to bottom. The named POST requests supply the IDs for later requests.
 # To repeat a scenario, start again at its POST to create a fresh claim.
+# With the kafka Spring profile active, the same workflow requests publish Kafka events.
+# See docs/KAFKA.md for the console consumer, outage test and duplicate replay.
 
 @baseUrl = http://127.0.0.1:8080/api
 @motorClaimant = claimant-1
@@ -186,3 +188,37 @@ X-Demo-User-Id: {{motorOfficer}}
 ### Dashboard 5 — Try reading the staff dashboard as a claimant. Expect 403.
 GET {{baseUrl}}/dashboard
 X-Demo-User-Id: {{motorClaimant}}
+
+# Start Kafka and run Spring Boot with the kafka profile before this scenario.
+# In the Kafka console consumer, look for the claim ID returned by Kafka 1 as the message key.
+# For an outage test, stop Kafka, send Kafka 1 and 2, then restart Kafka.
+# Both REST requests should succeed during the outage and publish in order after restart.
+
+### Kafka 1 — Submit a fresh claim. Expect 201 and CLAIM_SUBMITTED (sequence 1).
+# @name submitKafkaDemo
+POST {{baseUrl}}/claims
+X-Demo-User-Id: {{motorClaimant}}
+Content-Type: application/json
+
+{
+  "type": "MOTOR",
+  "market": "MY",
+  "incidentDate": "2025-11-05",
+  "description": "A parking lot collision damaged the front bumper.",
+  "requestedAmount": "750.00",
+  "currency": "MYR"
+}
+
+### Kafka 2 — Assign the claim. Expect 200 and CLAIM_ASSIGNED (sequence 2).
+POST {{baseUrl}}/claims/{{submitKafkaDemo.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"PICK_UP"}
+
+### Kafka 3 — Try to settle before approval. Expect 409 and no new event.
+POST {{baseUrl}}/claims/{{submitKafkaDemo.response.body.$.id}}/actions
+X-Demo-User-Id: {{motorOfficer}}
+Content-Type: application/json
+
+{"action":"SETTLE"}

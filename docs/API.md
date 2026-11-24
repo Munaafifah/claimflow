@@ -2,7 +2,7 @@
 
 Send JSON over HTTP under `/api`. Supply the seeded actor ID in `X-Demo-User-Id`. Return ISO 8601 dates and UTC timestamps. Represent money as decimal strings paired with a currency code.
 
-The claim and dashboard endpoints are implemented. The Kafka contract describes a planned milestone. Claim detail and mutation responses include history. List responses omit history entries.
+Claim detail and mutation responses include history. List responses omit history entries.
 
 | Method and path | Access and behavior |
 | --- | --- |
@@ -32,4 +32,4 @@ Performance counts use history timestamps and actor IDs. Each settlement or reje
 
 ## Kafka event contract
 
-Publish JSON to `claimflow.claim-events.v1` with claim ID as the message key. Include `eventId`, `eventType`, `schemaVersion`, `claimId`, `claimVersion`, `occurredAt` and `status`. Event types reflect successful actions, such as `CLAIM_SUBMITTED`, `CLAIM_ASSIGNED`, `CLAIM_INFO_REQUESTED` and `CLAIM_SETTLED`. Keep incident descriptions, questions, answers and personal details in the database. Delivery is at least once when the local publisher and broker are available.
+The publisher sends JSON to `claimflow.claim-events.v1` with the claim ID as the message key. Fields are `eventId`, `eventType`, `schemaVersion`, `claimId`, `claimSequence`, `occurredAt` and `status`. The sequence is the one-based history position. Gaps can occur when an action, such as resuming review, only writes history. The seven event types and manual tests are in [the Kafka guide](KAFKA.md).
