@@ -16,9 +16,6 @@ export function todayLocal(): string {
     .map(value => String(value).padStart(2, '0')).join('-');
 }
 
-export const nonBlank: ValidatorFn = control =>
-  typeof control.value === 'string' && control.value.trim() ? null : { required: true };
-
 export const incidentDate: ValidatorFn = control => {
   const value = control.value;
   if (!value) return null;
@@ -26,12 +23,6 @@ export const incidentDate: ValidatorFn = control => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(parsed.getTime()) ||
       parsed.toISOString().slice(0, 10) !== value) return { date: true };
   return value <= todayLocal() ? null : { future: true };
-};
-
-export const positiveAmount: ValidatorFn = control => {
-  const value: string = control.value.trim();
-  if (!value) return { required: true };
-  return /^\d{1,14}(\.\d{1,4})?$/.test(value) && /[1-9]/.test(value) ? null : { amount: true };
 };
 
 export const currencyScale: ValidatorFn = form => {

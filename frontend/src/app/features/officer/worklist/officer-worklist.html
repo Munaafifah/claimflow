@@ -1,0 +1,52 @@
+<div class="page-title">
+  <div>
+    <h1>Claims worklist</h1>
+    <p>Pick up incoming claims or continue reviewing your assigned claims.</p>
+  </div>
+  <button type="button" class="button" [disabled]="state().kind === 'loading'" (click)="refresh()">Refresh</button>
+</div>
+
+<nav class="worklist-nav" aria-label="Worklist views">
+  <a routerLink="/officer/claims" [class.selected]="!assigned()" [attr.aria-current]="!assigned() ? 'page' : null">
+    <app-icon name="inbox" /> Incoming Claims
+  </a>
+  <a routerLink="/officer/claims" [queryParams]="{ view: 'assigned' }" [class.selected]="assigned()" [attr.aria-current]="assigned() ? 'page' : null">
+    <app-icon name="claims" /> Assigned to Me
+  </a>
+</nav>
+
+@let result = state();
+<section class="surface worklist" aria-labelledby="worklist-heading">
+  <div class="heading">
+    <h2 id="worklist-heading">{{ assigned() ? 'Assigned to me' : 'Incoming claims' }}</h2>
+    @if (result.kind === 'ready') { <span>{{ result.claims.length }}</span> }
+  </div>
+  @switch (result.kind) {
+    @case ('loading') { <app-page-state kind="loading" message="Loading claims…" /> }
+    @case ('error') { <app-page-state kind="error" [message]="result.message" (retry)="refresh()" /> }
+    @case ('ready') {
+      @if (result.claims.length) {
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Claim</th><th scope="col">Type</th><th scope="col">Market</th><th scope="col">Submitted</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              @for (claim of result.claims; track claim.id) {
+                <tr>
+                  <th scope="row">
+                    <a [routerLink]="['/officer/claims', claim.id]" [attr.aria-label]="'Review claim ' + claim.id">#{{ claim.id }}</a>
+                  </th>
+                  <td>{{ claim.type === 'MOTOR' ? 'Motor' : 'Property' }}</td>
+                  <td>{{ claim.market }}</td>
+                  <td>{{ claim.createdAt | date:'mediumDate' }}</td>
+                  <td><app-status-badge [status]="claim.status" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-page-state kind="empty" [message]="assigned() ? 'You have no assigned claims yet.' : 'There are no incoming claims waiting for pickup.'" />
+      }
+    }
+  }
+</section>

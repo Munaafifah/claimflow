@@ -1,0 +1,15 @@
+.worklist-nav { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1rem; }
+.worklist-nav a {
+  display:inline-flex; align-items:center; gap:.5rem; text-decoration:none;
+  font-weight:650; color:var(--muted); padding:.58rem .85rem; border-radius:.6rem;
+}
+.worklist-nav a:hover, .worklist-nav a.selected { color:var(--primary); background:var(--indigo-light); }
+.worklist { overflow:hidden; }
+.heading { display:flex; align-items:center; gap:.65rem; padding:1rem 1.25rem; }
+.heading span { color:var(--primary); background:var(--background); border-radius:999px; padding:.1rem .55rem; font-weight:700; }
+.table-wrap { overflow:auto; }
+table { width:100%; border-collapse:collapse; text-align:left; white-space:nowrap; }
+th, td { padding:.8rem clamp(.65rem,3vw,1.2rem); border-top:1px solid var(--border); }
+thead th { color:var(--muted); font-size:.85rem; background:#fafaff; }
+tbody a { color:var(--primary); font-weight:700; }
+tbody tr:hover { background:var(--background); }

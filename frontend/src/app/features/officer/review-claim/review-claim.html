@@ -1,0 +1,92 @@
+@let result = state();
+<a class="back-link" routerLink="/officer/claims"
+   [queryParams]="result.kind === 'ready' && result.claim.officerId === identity.current().id ? { view: 'assigned' } : {}">Back to worklist</a>
+<div class="page-title">
+  <div>
+    <h1>{{ result.kind === 'ready' ? 'Review claim #' + result.claim.id : 'Review claim' }}</h1>
+    <p>Review the incident and progress the claim.</p>
+  </div>
+  @if (result.kind === 'ready') {
+    <div class="actions">
+      <app-status-badge [status]="result.claim.status" />
+      <button type="button" class="button" [disabled]="busy()" (click)="refresh()">Refresh</button>
+    </div>
+  }
+</div>
+@if (notice()) { <p class="success-banner" role="status">{{ notice() }}</p> }
+@if (error()) { <p class="error-banner action-error" role="alert">{{ error() }}</p> }
+@switch (result.kind) {
+  @case ('loading') { <section class="surface"><app-page-state kind="loading" message="Loading claim details…" /></section> }
+  @case ('error') { <section class="surface"><app-page-state kind="error" [message]="result.message" (retry)="refresh()" /></section> }
+  @case ('ready') {
+    @let claim = result.claim;
+    <div class="review-grid">
+      <div class="review-column">
+        <section class="surface panel action-panel">
+          <h2>Claim actions</h2>
+          @if (actions().length) {
+            <div class="actions">
+              @for (action of actions(); track action) {
+                <button type="button" class="button" [class.primary]="actions().length === 1 || selected() === action"
+                        [disabled]="busy()" (click)="choose(action)">{{ labels[action] }}</button>
+              }
+            </div>
+            @if (selected(); as action) {
+              @if (actions().includes(action)) {
+                <form class="action-form" [formGroup]="form" (ngSubmit)="confirm()" novalidate>
+                  @if (action === 'SETTLE') {
+                    <p class="hint">Record settlement of <strong>{{ claim.currency }} {{ claim.approvedAmount }}</strong> for this claim.</p>
+                  } @else {
+                    <div class="field">
+                      <label for="officer-message">{{ action === 'REQUEST_INFO' ? 'Question for the claimant' : 'Decision reason' }}</label>
+                      <textarea id="officer-message" formControlName="message" rows="4" maxlength="2000" [readOnly]="busy()" required
+                                [attr.aria-invalid]="form.controls.message.touched && form.controls.message.invalid"
+                                aria-describedby="officer-message-feedback"></textarea>
+                      @if (form.controls.message.touched && form.controls.message.invalid) {
+                        <span id="officer-message-feedback" class="field-error">Enter a message of up to 2,000 characters.</span>
+                      } @else {
+                        <span id="officer-message-feedback" class="hint">The claimant will see this message.</span>
+                      }
+                    </div>
+                    @if (action === 'APPROVE') {
+                      <div class="field">
+                        <label for="approved-amount">Approved amount ({{ claim.currency }})</label>
+                        <input id="approved-amount" formControlName="amount" inputmode="decimal" required [readOnly]="busy()"
+                               [attr.aria-invalid]="!!amountError()" aria-describedby="approved-amount-feedback"
+                               (input)="amountError.set('')">
+                        @if (amountError()) {
+                          <span class="field-error" id="approved-amount-feedback">{{ amountError() }}</span>
+                        } @else {
+                          <span class="hint" id="approved-amount-feedback">Requested amount {{ claim.currency }} {{ claim.requestedAmount }}.</span>
+                        }
+                      </div>
+                    }
+                  }
+                  <div class="actions">
+                    <button class="button primary" type="submit" [disabled]="busy()">
+                      {{ busy() ? 'Saving…' : action === 'REQUEST_INFO' ? 'Send request' : 'Confirm ' + (action === 'SETTLE' ? 'settlement' : action === 'APPROVE' ? 'approval' : 'rejection') }}
+                    </button>
+                    <button class="button" type="button" [disabled]="busy()" (click)="cancel()">Cancel</button>
+                  </div>
+                </form>
+              }
+            }
+          } @else {
+            @if (claim.status === 'SETTLED' || claim.status === 'REJECTED') {
+              <p class="hint">This claim is closed.</p>
+            } @else if (claim.officerId !== identity.current().id) {
+              <p class="hint">Only the assigned officer can update this claim.</p>
+            } @else {
+              <p class="hint">Waiting for additional information from the claimant.</p>
+            }
+          }
+        </section>
+        <app-claim-incident [claim]="claim" [showClaimant]="true" />
+      </div>
+      <section class="surface panel">
+        <h2>Claim history</h2>
+        <app-claim-history [entries]="claim.history" />
+      </section>
+    </div>
+  }
+}

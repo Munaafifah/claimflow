@@ -1,6 +1,7 @@
 import { FormControl, FormGroup } from '@angular/forms';
 import { describe, expect, it } from 'vitest';
-import { currencyScale, incidentDate, nonBlank, positiveAmount, todayLocal } from './claim-form-validation';
+import { currencyScale, incidentDate, todayLocal } from './claim-form-validation';
+import { nonBlank, positiveAmount } from '../../shared/claim-input-validation';
 
 describe('Claimant form validation', () => {
   it('rejects whitespace-only descriptions and replies', () => {

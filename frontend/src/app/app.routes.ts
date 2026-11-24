@@ -6,6 +6,8 @@ import { WorkspacePreview } from './features/workspace-preview/workspace-preview
 import { ClaimantClaims } from './features/claimant/claimant-claims/claimant-claims';
 import { ClaimDetail } from './features/claimant/claim-detail/claim-detail';
 import { SubmitClaim } from './features/claimant/submit-claim/submit-claim';
+import { OfficerWorklist } from './features/officer/worklist/officer-worklist';
+import { ReviewClaim } from './features/officer/review-claim/review-claim';
 
 const home: RedirectFunction = () => inject(DemoIdentity).home();
 
@@ -20,7 +22,14 @@ export const routes: Routes = [
       { path: 'claims/:id', component: ClaimDetail, title: 'Claim detail · ClaimFlow' },
     ],
   },
-  { path: 'officer', canActivate: [requireDemoRole('officer')], component: WorkspacePreview, title: 'Officer · ClaimFlow', data: { view: 'officer' } },
+  {
+    path: 'officer', canActivateChild: [requireDemoRole('officer')],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'claims' },
+      { path: 'claims', pathMatch: 'full', component: OfficerWorklist, title: 'Claims worklist · ClaimFlow' },
+      { path: 'claims/:id', component: ReviewClaim, title: 'Review claim · ClaimFlow' },
+    ],
+  },
   { path: 'management', canActivate: [requireDemoRole('officer')], component: WorkspacePreview, title: 'Management · ClaimFlow', data: { view: 'management' } },
   { path: '**', redirectTo: home },
 ];

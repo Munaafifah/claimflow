@@ -76,6 +76,6 @@ describe('Portal foundation', () => {
     await router.navigateByUrl('/management');
     expect(router.url).toBe('/management');
     await router.navigateByUrl('/claimant');
-    expect(router.url).toBe('/officer');
+    expect(router.url).toBe('/officer/claims');
   });
 });

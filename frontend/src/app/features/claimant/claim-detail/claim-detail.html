@@ -56,20 +56,7 @@
             @else if (claim.status === 'APPROVED') { <p class="hint">Awaiting settlement.</p> }
           </section>
         }
-        <section class="surface panel">
-          <h2>Incident details</h2>
-          <dl>
-            <div><dt>Claim type</dt><dd>{{ claim.type === 'MOTOR' ? 'Motor' : 'Property' }}</dd></div>
-            <div><dt>Market</dt><dd>{{ claim.market }}</dd></div>
-            <div><dt>Incident date</dt><dd>{{ claim.incidentDate | date:'mediumDate' }}</dd></div>
-            <div><dt>Requested amount</dt><dd>{{ claim.currency }} {{ claim.requestedAmount }}</dd></div>
-            <div><dt>Submitted</dt><dd>{{ claim.createdAt | date:'medium' }}</dd></div>
-            <div><dt>Last updated</dt><dd>{{ claim.updatedAt | date:'medium' }}</dd></div>
-            <div><dt>Assigned officer</dt><dd>{{ claim.officerId ?? 'Awaiting assignment' }}</dd></div>
-          </dl>
-          <h3>Description</h3>
-          <p class="free-text">{{ claim.description }}</p>
-        </section>
+        <app-claim-incident [claim]="claim" />
       </div>
       <section class="surface panel history">
         <h2>Claim history</h2>

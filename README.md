@@ -49,6 +49,6 @@ npm.cmd start
 
 Run `npm.cmd ci` for the first install or when dependencies change. Stop any running Angular dev server with **Ctrl+C** before reinstalling, since it can hold `esbuild.exe` open on Windows. For subsequent launches, use `npm.cmd start`.
 
-Open `http://localhost:4200`. Use **Demo identity** to choose a claimant and try the overview, submission form, or claims list. The officer and Management previews show live data. The development server forwards `/api/**` to Spring Boot.
+Open `http://localhost:4200`. Use **Demo identity** to switch between claimant tracking and the officer worklist. Management shows a live summary preview. The development server forwards `/api/**` to Spring Boot.
 
 See [frontend setup and scope](frontend/README.md) for tests and troubleshooting.

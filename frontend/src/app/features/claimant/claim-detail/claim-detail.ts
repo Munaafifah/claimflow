@@ -12,7 +12,8 @@ import { Claim } from '../../../core/models/claim';
 import { ClaimHistory } from '../../../shared/components/claim-history/claim-history';
 import { PageState } from '../../../shared/components/page-state/page-state';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
-import { nonBlank } from '../claim-form-validation';
+import { nonBlank } from '../../../shared/claim-input-validation';
+import { ClaimIncident } from '../../../shared/components/claim-incident/claim-incident';
 
 type DetailState =
   | { kind: 'loading' }
@@ -20,9 +21,9 @@ type DetailState =
   | { kind: 'ready'; claim: Claim };
 
 @Component({
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, ClaimHistory, PageState, StatusBadge],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink, ClaimHistory, ClaimIncident, PageState, StatusBadge],
   templateUrl: './claim-detail.html',
-  styleUrls: ['../claimant-styles.scss', './claim-detail.scss'],
+  styleUrls: ['../../../shared/workflow-page.scss', './claim-detail.scss'],
 })
 export class ClaimDetail {
   private readonly route = inject(ActivatedRoute);

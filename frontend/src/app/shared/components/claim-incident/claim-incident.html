@@ -1,0 +1,19 @@
+@let record = claim();
+<section class="surface panel">
+  <h2>Incident details</h2>
+  <dl>
+    @if (showClaimant()) { <div><dt>Claimant</dt><dd>{{ record.claimantId }}</dd></div> }
+    <div><dt>Claim type</dt><dd>{{ record.type === 'MOTOR' ? 'Motor' : 'Property' }}</dd></div>
+    <div><dt>Market</dt><dd>{{ record.market }}</dd></div>
+    <div><dt>Incident date</dt><dd>{{ record.incidentDate | date:'mediumDate' }}</dd></div>
+    <div><dt>Requested amount</dt><dd>{{ record.currency }} {{ record.requestedAmount }}</dd></div>
+    @if (showClaimant() && record.approvedAmount !== null) {
+      <div><dt>Approved amount</dt><dd>{{ record.currency }} {{ record.approvedAmount }}</dd></div>
+    }
+    <div><dt>Submitted</dt><dd>{{ record.createdAt | date:'medium' }}</dd></div>
+    <div><dt>Last updated</dt><dd>{{ record.updatedAt | date:'medium' }}</dd></div>
+    <div><dt>Assigned officer</dt><dd>{{ record.officerId ?? 'Awaiting assignment' }}</dd></div>
+  </dl>
+  <h3>Description</h3>
+  <p>{{ record.description }}</p>
+</section>

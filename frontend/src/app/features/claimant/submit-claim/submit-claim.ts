@@ -8,12 +8,13 @@ import { describeApiError } from '../../../core/api/api-error';
 import { ClaimsApi } from '../../../core/api/claims-api';
 import { DemoIdentity } from '../../../core/identity/demo-identity';
 import { Claim, ClaimType, Market } from '../../../core/models/claim';
-import { currencyScale, incidentDate, MARKETS, nonBlank, positiveAmount, todayLocal } from '../claim-form-validation';
+import { currencyScale, incidentDate, MARKETS, todayLocal } from '../claim-form-validation';
+import { nonBlank, positiveAmount } from '../../../shared/claim-input-validation';
 
 @Component({
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './submit-claim.html',
-  styleUrls: ['../claimant-styles.scss', './submit-claim.scss'],
+  styleUrls: ['../../../shared/workflow-page.scss', './submit-claim.scss'],
 })
 export class SubmitClaim {
   private readonly builder = inject(FormBuilder).nonNullable;

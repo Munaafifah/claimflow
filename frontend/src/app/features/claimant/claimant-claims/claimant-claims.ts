@@ -20,7 +20,7 @@ type ClaimsState =
 @Component({
   imports: [DatePipe, RouterLink, Icon, PageState, StatisticCard, StatusBadge],
   templateUrl: './claimant-claims.html',
-  styleUrls: ['../claimant-styles.scss', './claimant-claims.scss'],
+  styleUrls: ['../../../shared/workflow-page.scss', './claimant-claims.scss'],
 })
 export class ClaimantClaims {
   private readonly api = inject(ClaimsApi);
