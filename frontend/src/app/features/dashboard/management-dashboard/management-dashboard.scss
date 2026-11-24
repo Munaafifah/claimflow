@@ -1,0 +1,30 @@
+.refresh-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.75rem; }
+.refresh { display:inline-flex; align-items:center; gap:.45rem; }
+.refresh-error { margin:0 0 1rem; }
+.summary-grid, .currency-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%, 13rem),1fr)); gap:1rem;
+}
+.report-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-top:1rem; }
+.report-section { margin-top:1rem; }
+h2 + .hint { margin-top:.25rem; }
+.chart, .currency-grid { list-style:none; padding:0; margin:1rem 0 0; }
+.chart { display:grid; gap:.85rem; }
+.bar-label { display:flex; justify-content:space-between; gap:1rem; margin-bottom:.25rem; font-size:.9rem; }
+.bar-track { height:.55rem; border-radius:999px; background:var(--background); overflow:hidden; }
+.bar-fill { height:100%; border-radius:inherit; background:var(--primary); }
+.distribution .bar-fill { background:var(--lavender); }
+.workload-breakdown { display:flex; flex-wrap:wrap; gap:.25rem .75rem; margin-top:.25rem; color:var(--muted); font-size:.85rem; }
+.currency-grid li { display:grid; gap:.28rem; padding:1rem; background:var(--background); border:1px solid var(--indigo-light); border-radius:.7rem; }
+.currency-grid span { font-size:.85rem; font-weight:700; color:var(--primary); }
+.currency-grid strong { font-size:clamp(1rem, 3vw, 1.6rem); overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.table-wrap { overflow:auto; margin-top:1rem; }
+.table-wrap:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+table { width:100%; border-collapse:collapse; text-align:left; white-space:nowrap; }
+th,td { padding:.65rem .7rem; border-bottom:1px solid var(--border); }
+thead th { color:var(--muted); background:#fafaff; font-size:.85rem; }
+tbody th { font-weight:650; }
+.period { color:var(--primary); margin:.8rem 0; font-size:.9rem; font-weight:650; }
+.outcomes { margin-bottom:.7rem; }
+.date-form { display:flex; flex-wrap:wrap; align-items:flex-end; gap:.75rem; margin-top:.8rem; }
+.date-form .field { flex:0 1 11rem; }
+@media(max-width:950px) { .report-grid { grid-template-columns:minmax(0,1fr); } }

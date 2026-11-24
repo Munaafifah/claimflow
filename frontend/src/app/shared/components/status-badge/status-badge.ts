@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { ClaimStatus } from '../../../core/models/claim';
 
-const labels: Record<ClaimStatus, string> = {
+export const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {
   SUBMITTED: 'Submitted', UNDER_REVIEW: 'Under review', INFO_REQUIRED: 'Info needed',
   INFO_RECEIVED: 'Info received', APPROVED: 'Approved', REJECTED: 'Rejected', SETTLED: 'Settled',
 };
@@ -18,5 +18,5 @@ const labels: Record<ClaimStatus, string> = {
 })
 export class StatusBadge {
   readonly status = input.required<ClaimStatus>();
-  protected readonly labels = labels;
+  protected readonly labels = CLAIM_STATUS_LABELS;
 }

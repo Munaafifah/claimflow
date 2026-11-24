@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { RedirectFunction, Routes } from '@angular/router';
 import { DemoIdentity } from './core/identity/demo-identity';
 import { requireDemoRole } from './core/identity/portal.guard';
-import { WorkspacePreview } from './features/workspace-preview/workspace-preview';
+import { ManagementDashboard } from './features/dashboard/management-dashboard/management-dashboard';
 import { ClaimantClaims } from './features/claimant/claimant-claims/claimant-claims';
 import { ClaimDetail } from './features/claimant/claim-detail/claim-detail';
 import { SubmitClaim } from './features/claimant/submit-claim/submit-claim';
@@ -30,6 +30,6 @@ export const routes: Routes = [
       { path: 'claims/:id', component: ReviewClaim, title: 'Review claim · ClaimFlow' },
     ],
   },
-  { path: 'management', canActivate: [requireDemoRole('officer')], component: WorkspacePreview, title: 'Management · ClaimFlow', data: { view: 'management' } },
+  { path: 'management', canActivate: [requireDemoRole('officer')], component: ManagementDashboard, title: 'Management · ClaimFlow' },
   { path: '**', redirectTo: home },
 ];

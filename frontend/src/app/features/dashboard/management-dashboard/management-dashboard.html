@@ -1,0 +1,170 @@
+@let report = state();
+<div class="page-title">
+  <div>
+    <h1>Management dashboard</h1>
+    <p>Monitor team workload, claim outcomes, and outstanding exposure.</p>
+  </div>
+  <div class="refresh-controls">
+    @if (report.updatedAt !== null) {
+      <span class="hint">Last updated <time [attr.datetime]="report.updatedAt | date:'yyyy-MM-ddTHH:mm:ss.SSSZZZZZ'">{{ report.updatedAt | date:'mediumTime' }}</time></span>
+    }
+    <button class="button refresh" type="button" [disabled]="report.loading" (click)="refresh()">
+      <app-icon name="refresh" /> {{ report.loading ? 'Refreshing…' : 'Refresh' }}
+    </button>
+  </div>
+</div>
+
+@if (report.data; as data) {
+  @if (report.error) {
+    <p role="alert" class="error-banner refresh-error">Showing the last successful report. {{ report.error }}</p>
+  }
+
+  <section class="summary-grid" aria-label="Claim totals">
+    <app-statistic-card label="Total claims" [value]="data.summary.total" icon="claims" />
+    <app-statistic-card label="Outstanding" [value]="data.summary.active" icon="clock" />
+    <app-statistic-card label="Unassigned" [value]="data.summary.unassigned" icon="inbox" />
+    <app-statistic-card label="Completed" [value]="data.summary.completed" icon="check" />
+  </section>
+
+  <div class="report-grid">
+    <section class="surface panel" aria-labelledby="workload-heading">
+      <h2 id="workload-heading">Officer workload</h2>
+      <p class="hint">Active claims assigned to each officer</p>
+      @if (data.officerWorkload.length) {
+        <ul class="chart workload">
+          @for (officer of data.officerWorkload; track officer.officerId) {
+            <li>
+              <div class="bar-label"><span>{{ officer.officerId }}</span><strong>{{ officer.active }}</strong></div>
+              <div class="bar-track" aria-hidden="true">
+                <div class="bar-fill" [style.width.%]="100 * officer.active / workloadMax()"></div>
+              </div>
+              <div class="workload-breakdown">
+                @for (status of statuses; track status) {
+                  @if (officer.byStatus[status]; as count) {
+                    <span>{{ statusLabels[status] }} {{ count }}</span>
+                  }
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-page-state kind="empty" message="No officer workload is available." />
+      }
+    </section>
+
+    <section class="surface panel" aria-labelledby="status-heading">
+      <h2 id="status-heading">Outstanding claims by status</h2>
+      <p class="hint">Share of all outstanding claims</p>
+      @if (distribution().length && data.summary.active > 0) {
+        <ul class="chart distribution">
+          @for (row of distribution(); track row.status) {
+            <li>
+              <div class="bar-label">
+                <span>{{ statusLabels[row.status] }}</span><strong>{{ row.count }}</strong>
+              </div>
+              <div class="bar-track" aria-hidden="true">
+                <div class="bar-fill" [style.width.%]="100 * row.count / data.summary.active"></div>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-page-state kind="empty" message="There are no outstanding claims." />
+      }
+    </section>
+  </div>
+
+  <section class="surface panel report-section" aria-labelledby="exposure-heading">
+    <h2 id="exposure-heading">Estimated liability exposure</h2>
+    <p class="hint">Outstanding amounts by currency</p>
+    @if (data.exposureByCurrency.length) {
+      <ul class="currency-grid">
+        @for (item of data.exposureByCurrency; track item.currency) {
+          <li><span>{{ item.currency }}</span><strong>{{ item.amount }}</strong></li>
+        }
+      </ul>
+    } @else {
+      <app-page-state kind="empty" message="There is no outstanding exposure." />
+    }
+  </section>
+
+  <section class="surface panel report-section" aria-labelledby="outstanding-heading">
+    <h2 id="outstanding-heading">Outstanding claim groups</h2>
+    <p class="hint">By market, claim type, and status</p>
+    @if (data.outstandingClaims.length) {
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Outstanding claim groups table">
+        <table>
+          <thead><tr><th scope="col">Market</th><th scope="col">Claim type</th><th scope="col">Status</th><th scope="col">Claims</th></tr></thead>
+          <tbody>
+            @for (group of data.outstandingClaims; track group.market + group.type + group.status) {
+              <tr>
+                <th scope="row">{{ group.market }}</th>
+                <td>{{ group.type === 'MOTOR' ? 'Motor' : 'Property' }}</td>
+                <td><app-status-badge [status]="group.status" /></td>
+                <td>{{ group.count }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <app-page-state kind="empty" message="There are no outstanding claims to group." />
+    }
+  </section>
+
+  <section class="surface panel report-section" aria-labelledby="performance-heading">
+    <h2 id="performance-heading">Team performance</h2>
+    <p class="hint">Date filters apply to performance only. Dates are UTC and include the selected end day.</p>
+    <form class="date-form" [formGroup]="dateForm" (ngSubmit)="applyDates()" novalidate>
+      <div class="field">
+        <label for="performance-start">Start date (UTC)</label>
+        <input id="performance-start" type="date" formControlName="startDay" [attr.aria-invalid]="!!rangeError()" />
+      </div>
+      <div class="field">
+        <label for="performance-end">End date (UTC)</label>
+        <input id="performance-end" type="date" formControlName="endDay" [attr.aria-invalid]="!!rangeError()" />
+      </div>
+      <div class="actions">
+        <button type="submit" class="button primary">Apply dates</button>
+        <button type="button" class="button" (click)="clearDates()">Clear</button>
+      </div>
+    </form>
+    @if (rangeError()) { <p class="field-error" role="alert">{{ rangeError() }}</p> }
+    <p class="period">
+      @if (data.performance.from; as from) {
+        Reporting period: {{ from | date:'mediumDate':'UTC' }} to before {{ data.performance.to | date:'mediumDate':'UTC' }} UTC
+      } @else {
+        Reporting period: All time
+      }
+    </p>
+    <div class="summary-grid outcomes" aria-label="Team outcomes">
+      <app-statistic-card label="Approvals" [value]="data.performance.approved" icon="check" />
+      <app-statistic-card label="Rejections" [value]="data.performance.rejected" icon="claims" />
+      <app-statistic-card label="Settlements" [value]="data.performance.settled" icon="check" />
+      <app-statistic-card label="Avg. resolution" [value]="resolution(data.performance.averageResolutionSeconds)" icon="clock" />
+    </div>
+    @if (data.performance.averageResolutionSeconds === null) {
+      <p class="hint">No claims were settled or rejected in this period.</p>
+    }
+    @if (data.performance.byOfficer.length) {
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Officer performance table">
+        <table>
+          <thead><tr><th scope="col">Officer</th><th scope="col">Approvals</th><th scope="col">Rejections</th><th scope="col">Settlements</th><th scope="col">Avg. resolution</th></tr></thead>
+          <tbody>
+            @for (officer of data.performance.byOfficer; track officer.officerId) {
+              <tr>
+                <th scope="row">{{ officer.officerId }}</th><td>{{ officer.approved }}</td><td>{{ officer.rejected }}</td>
+                <td>{{ officer.settled }}</td><td>{{ resolution(officer.averageResolutionSeconds) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+} @else if (report.error) {
+  <section class="surface"><app-page-state kind="error" [message]="report.error" (retry)="refresh()" /></section>
+} @else {
+  <section class="surface"><app-page-state kind="loading" message="Loading the management dashboard…" /></section>
+}

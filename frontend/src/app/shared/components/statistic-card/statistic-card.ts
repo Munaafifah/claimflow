@@ -17,6 +17,6 @@ import { Icon } from '../icon/icon';
 })
 export class StatisticCard {
   readonly label = input.required<string>();
-  readonly value = input.required<number>();
+  readonly value = input.required<number | string>();
   readonly icon = input.required<'claims' | 'clock' | 'check' | 'inbox'>();
 }
