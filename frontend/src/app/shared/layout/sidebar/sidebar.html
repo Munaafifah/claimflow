@@ -1,0 +1,21 @@
+<aside>
+  <a class="brand" [routerLink]="identity.home()">
+    <span class="brand-mark"><app-icon name="shield" /></span>
+    <span>ClaimFlow</span>
+  </a>
+  <nav aria-label="Workspace">
+    @if (identity.current().role === 'claimant') {
+      <a routerLink="/claimant" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">
+        <app-icon name="overview" /> Claim overview
+      </a>
+    } @else {
+      <a routerLink="/officer" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">
+        <app-icon name="claims" /> Officer workspace
+      </a>
+      <a routerLink="/management" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">
+        <app-icon name="team" /> Management
+      </a>
+    }
+  </nav>
+  <div class="sidebar-foot">Insurance claims workspace</div>
+</aside>

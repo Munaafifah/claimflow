@@ -1,0 +1,30 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.workspace { min-width: 0; }
+
+main {
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  top: .75rem;
+  left: .75rem;
+  padding: .75rem 1rem;
+  border-radius: .5rem;
+  background: var(--surface);
+  transform: translateY(-160%);
+}
+
+.skip-link:focus { transform: none; }
+
+@media (max-width: 760px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+}

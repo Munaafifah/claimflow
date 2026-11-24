@@ -1,0 +1,58 @@
+<div class="page-title">
+  <div>
+    <h1>{{ copy.title }}</h1>
+    <p>{{ copy.description }}</p>
+  </div>
+  <button type="button" class="button refresh" [disabled]="state().kind === 'loading'" (click)="refresh()">
+    <app-icon name="refresh" /> Refresh
+  </button>
+</div>
+
+@let result = state();
+@switch (result.kind) {
+  @case ('loading') {
+    <section class="surface"><app-page-state kind="loading" message="Loading from ClaimFlow…" /></section>
+  }
+  @case ('error') {
+    <section class="surface"><app-page-state kind="error" [message]="result.message" (retry)="refresh()" /></section>
+  }
+  @case ('claims') {
+    <section class="surface claims" aria-labelledby="claims-heading">
+      <div class="section-title">
+        <span class="section-icon"><app-icon name="claims" /></span>
+        <h2 id="claims-heading">{{ copy.list }}</h2>
+        <span class="count">{{ result.claims.length }}</span>
+      </div>
+      @if (result.claims.length === 0) {
+        <app-page-state kind="empty" [message]="view === 'claimant' ? 'You have no claims yet.' : 'The incoming queue is clear.'" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Claim</th><th scope="col">Type</th><th scope="col">Incident date</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              @for (claim of result.claims.slice(0, 6); track claim.id) {
+                <tr>
+                  <th scope="row">#{{ claim.id }}</th>
+                  <td>{{ claim.type === 'MOTOR' ? 'Motor' : 'Property' }}</td>
+                  <td>{{ claim.incidentDate | date:'mediumDate' }}</td>
+                  <td><app-status-badge [status]="claim.status" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (result.claims.length > 6) {
+          <p class="list-note">Showing the latest 6 claims</p>
+        }
+      }
+    </section>
+  }
+  @case ('dashboard') {
+    <section class="stats" aria-label="Claims summary">
+      <app-statistic-card label="Total claims" [value]="result.dashboard.summary.total" icon="claims" />
+      <app-statistic-card label="Outstanding" [value]="result.dashboard.summary.active" icon="clock" />
+      <app-statistic-card label="Unassigned" [value]="result.dashboard.summary.unassigned" icon="inbox" />
+      <app-statistic-card label="Completed" [value]="result.dashboard.summary.completed" icon="check" />
+    </section>
+  }
+}

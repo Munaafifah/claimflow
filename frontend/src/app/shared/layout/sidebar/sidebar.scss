@@ -1,0 +1,25 @@
+:host { display: block; background: var(--surface); border-right: 1px solid var(--border); }
+aside { min-height: 100%; display: flex; flex-direction: column; padding: 1.5rem 1rem; gap: 2.5rem; }
+.brand {
+  display: flex; align-items: center; gap: .7rem; order: 0; margin-left: .35rem;
+  color: var(--text); font-size: 1.25rem; font-weight: 750; letter-spacing: -.04em; text-decoration: none;
+}
+.brand-mark {
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  border-radius: .7rem; background: var(--primary); color: white;
+}
+nav { display: grid; gap: .35rem; }
+nav a {
+  display: flex; align-items: center; gap: .65rem; min-height: 2.75rem;
+  padding: .55rem .75rem; border-radius: .6rem; color: var(--muted);
+  font-size: .9rem; font-weight: 600; text-decoration: none;
+}
+nav a:hover { background: var(--background); color: var(--primary); }
+nav a.active { background: var(--indigo-light); color: var(--primary); }
+.sidebar-foot { margin-top: auto; padding: .75rem .4rem 0; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
+@media (max-width: 760px) {
+  :host { border-right: 0; border-bottom: 1px solid var(--border); }
+  aside { padding: .75rem 1rem; gap: .6rem; }
+  nav { display: flex; flex-wrap: wrap; }
+  .sidebar-foot { display: none; }
+}

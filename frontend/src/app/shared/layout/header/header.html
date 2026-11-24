@@ -1,0 +1,23 @@
+<header>
+  <span class="portal">{{ identity.current().role === 'claimant' ? 'Claimant portal' : 'Staff portal' }}</span>
+  <div class="identity">
+    <span class="avatar" aria-hidden="true">{{ identity.current().initials }}</span>
+    <div>
+      <label for="demo-actor">Demo identity</label>
+      <select id="demo-actor" [value]="identity.current().id" aria-describedby="demo-note"
+              (change)="changeIdentity($any($event.target).value)">
+        <optgroup label="Claimants">
+          @for (actor of actors.slice(0, 2); track actor.id) {
+            <option [value]="actor.id">{{ actor.label }}</option>
+          }
+        </optgroup>
+        <optgroup label="Claims officers">
+          @for (actor of actors.slice(2); track actor.id) {
+            <option [value]="actor.id">{{ actor.label }}</option>
+          }
+        </optgroup>
+      </select>
+    </div>
+    <span id="demo-note">For demonstration only</span>
+  </div>
+</header>
