@@ -1,0 +1,7 @@
+.timeline { margin:1.1rem 0 0 .4rem; padding:0; list-style:none; }
+li { position:relative; border-left:2px solid var(--indigo-light); padding:0 0 1.35rem 1.2rem; }
+li:last-child { border-color:transparent; padding-bottom:0; }
+li::before { content:''; position:absolute; left:-.4rem; top:.32rem; width:.7rem; height:.7rem; border-radius:50%; background:var(--primary); }
+.event-heading { display:flex; flex-wrap:wrap; align-items:center; gap:.35rem .6rem; }
+time, .empty { color:var(--muted); font-size:.875rem; }
+p { margin:.4rem 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }

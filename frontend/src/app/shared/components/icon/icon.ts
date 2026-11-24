@@ -9,6 +9,7 @@ const paths = {
   inbox: 'M4 4h16l2 11v5H2v-5z M2 15h6l2 2h4l2-2h6',
   check: 'M5 12l4 4L19 6',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 7v5l3 2',
+  plus: 'M12 5v14 M5 12h14',
 };
 
 @Component({

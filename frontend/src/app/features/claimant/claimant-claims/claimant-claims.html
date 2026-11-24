@@ -1,0 +1,79 @@
+<div class="page-title">
+  <div>
+    <h1>{{ overview ? 'Claim overview' : 'My claims' }}</h1>
+    <p>{{ overview ? 'Keep track of the claims you’ve submitted.' : 'Find a claim and see its latest progress.' }}</p>
+  </div>
+  <div class="actions">
+    <a class="button primary" routerLink="/claimant/claims/new"><app-icon name="plus" /> Submit a claim</a>
+    @if (overview) {
+      <a class="button" routerLink="/claimant/claims"><app-icon name="claims" /> View my claims</a>
+    }
+  </div>
+</div>
+
+@let result = state();
+@if (result.kind === 'ready' && overview) {
+  <section class="stats" aria-label="Personal claim summary">
+    <app-statistic-card label="Total claims" [value]="summary().total" icon="claims" />
+    <app-statistic-card label="In progress" [value]="summary().inProgress" icon="clock" />
+    <app-statistic-card label="Action required" [value]="summary().needsAction" icon="inbox" />
+    <app-statistic-card label="Completed" [value]="summary().completed" icon="check" />
+  </section>
+}
+<section class="surface claim-list" aria-labelledby="claims-heading">
+  <div class="section-title">
+    <div class="section-heading">
+      <span class="section-icon"><app-icon name="claims" /></span>
+      <h2 id="claims-heading">{{ overview ? 'Recent claims' : 'Claims' }}</h2>
+    </div>
+    <button type="button" class="button" [disabled]="result.kind === 'loading'" (click)="refresh()">Refresh</button>
+  </div>
+  @if (!overview && result.kind === 'ready' && result.claims.length) {
+    <div class="filters">
+      <div class="field">
+        <label for="claim-status">Status</label>
+        <select #statusFilter id="claim-status" [value]="status()" (change)="status.set($any(statusFilter.value))">
+          <option value="">All statuses</option>
+          @for (item of statuses; track item[0]) { <option [value]="item[0]">{{ item[1] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="claim-type">Claim type</label>
+        <select #typeFilter id="claim-type" [value]="type()" (change)="type.set($any(typeFilter.value))">
+          <option value="">All types</option>
+          <option value="MOTOR">Motor</option>
+          <option value="PROPERTY">Property</option>
+        </select>
+      </div>
+    </div>
+  }
+  @switch (result.kind) {
+    @case ('loading') {
+      <app-page-state kind="loading" message="Loading your claims…" />
+    }
+    @case ('error') {
+      <app-page-state kind="error" [message]="result.message" (retry)="refresh()" />
+    }
+    @case ('ready') {
+      @if (!visibleClaims().length) {
+        <app-page-state kind="empty" [message]="result.claims.length ? 'No claims match these filters.' : 'You have no claims yet.'"/>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Claim</th><th scope="col">Type</th><th scope="col">Incident date</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              @for (claim of visibleClaims(); track claim.id) {
+                <tr>
+                  <th scope="row"><a [routerLink]="['/claimant/claims', claim.id]" [attr.aria-label]="'View claim ' + claim.id">#{{ claim.id }}</a></th>
+                  <td>{{ claim.type === 'MOTOR' ? 'Motor' : 'Property' }}</td>
+                  <td>{{ claim.incidentDate | date:'mediumDate' }}</td>
+                  <td><app-status-badge [status]="claim.status" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  }
+</section>

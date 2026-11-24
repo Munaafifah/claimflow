@@ -1,0 +1,16 @@
+@if (entries().length) {
+  <ol class="timeline">
+    @for (entry of entries(); track $index) {
+      <li>
+        <div class="event-heading">
+          <strong>{{ labels[entry.action] }}</strong>
+          <app-status-badge [status]="entry.status" />
+        </div>
+        <time [attr.datetime]="entry.occurredAt">{{ entry.occurredAt | date:'medium' }}</time>
+        @if (entry.message) { <p>{{ entry.message }}</p> }
+      </li>
+    }
+  </ol>
+} @else {
+  <p class="empty">There’s no history to show yet.</p>
+}

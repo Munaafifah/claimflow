@@ -1,0 +1,6 @@
+.claim-form { max-width:48rem; display:grid; gap:1.25rem; }
+fieldset { margin:0; padding:0; border:none; min-width:0; }
+legend { font-weight:700; padding:0 0 1.15rem; }
+.form-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem 1.2rem; }
+.full-width { grid-column:1 / -1; }
+@media(max-width:540px) { .form-grid { grid-template-columns:minmax(0,1fr); } }

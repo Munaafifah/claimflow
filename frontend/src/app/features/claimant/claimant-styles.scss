@@ -1,0 +1,24 @@
+.page-title {
+  display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;
+  gap:1rem; margin-bottom:1.65rem;
+}
+h1 { margin:0; font-size:clamp(1.85rem, 4vw, 2.65rem); line-height:1.15; letter-spacing:-.05em; }
+h2 { margin:0; font-size:1.1rem; }
+.page-title p { margin:.5rem 0 0; color:var(--muted); }
+.actions { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; }
+.panel { padding:clamp(1rem, 3vw, 1.5rem); }
+.field { display:grid; gap:.35rem; min-width:0; }
+.field label { font-size:.9rem; font-weight:650; }
+.field input, .field select, .field textarea {
+  width:100%; color:var(--text); background:var(--surface); border:1px solid #cbd5e1;
+  min-height:2.65rem; border-radius:.55rem; padding:.5rem .65rem;
+}
+.field textarea { resize:vertical; }
+.field [aria-invalid=true] { border-color:#b91c1c; }
+.field-error { color:#991b1b; font-size:.875rem; }
+.hint { color:var(--muted); font-size:.875rem; margin:0; }
+.error-banner {
+  color:#991b1b; background:#fef2f2; border:1px solid #fecaca;
+  padding:.7rem .85rem; border-radius:.55rem; margin:0;
+}
+.back-link { display:inline-block; margin-bottom:.8rem; color:var(--primary); font-weight:600; }

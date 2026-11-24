@@ -1,0 +1,80 @@
+<a class="back-link" routerLink="/claimant/claims">Back to my claims</a>
+@let result = state();
+<div class="page-title">
+  <div>
+    <h1>{{ result.kind === 'ready' ? 'Claim #' + result.claim.id : 'Claim details' }}</h1>
+    <p>Review the incident, updates, and decision on your claim.</p>
+  </div>
+  @if (result.kind === 'ready') {
+    <div class="actions">
+      <app-status-badge [status]="result.claim.status" />
+      <button class="button" type="button" (click)="refresh()" [disabled]="busy()">Refresh</button>
+    </div>
+  }
+</div>
+@if (notice()) { <p class="success-banner" role="status">{{ notice() }}</p> }
+@if (error()) { <p class="error-banner reply-error" role="alert">{{ error() }}</p> }
+@switch (result.kind) {
+  @case ('loading') {
+    <section class="surface"><app-page-state kind="loading" message="Loading claim details…" /></section>
+  }
+  @case ('error') {
+    <section class="surface"><app-page-state kind="error" [message]="result.message" (retry)="refresh()" /></section>
+  }
+  @case ('ready') {
+    @let claim = result.claim;
+    <div class="detail-grid">
+      <div class="detail-column">
+        @if (claim.status === 'INFO_REQUIRED') {
+          <section class="surface panel reply">
+            <h2>Additional information requested</h2>
+            @if (latestRequest()?.message; as request) { <p class="officer-message">{{ request }}</p> }
+            <form (submit)="$event.preventDefault(); sendReply()" novalidate>
+              <div class="field">
+                <label for="claim-reply">Your reply</label>
+                <textarea id="claim-reply" rows="4" maxlength="2000" [formControl]="reply" required [readOnly]="busy()"
+                          [attr.aria-invalid]="reply.touched && reply.invalid" aria-describedby="reply-feedback"></textarea>
+                @if (reply.touched && reply.invalid) {
+                  <span id="reply-feedback" class="field-error">Enter a reply of up to 2,000 characters.</span>
+                } @else {
+                  <span id="reply-feedback" class="hint">Up to 2,000 characters.</span>
+                }
+              </div>
+              <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Sending…' : 'Send reply' }}</button>
+            </form>
+          </section>
+        }
+        @if (outcome(); as record) {
+          <section class="surface panel">
+            <h2>{{ record.settlement ? 'Settlement recorded' : 'Claim decision' }}</h2>
+            <p class="decision"><strong>{{ record.decision.action === 'APPROVE' ? 'Approved' : 'Rejected' }}</strong> · {{ record.decision.occurredAt | date:'mediumDate' }}</p>
+            @if (record.decision.message) { <p class="free-text">{{ record.decision.message }}</p> }
+            @if (claim.approvedAmount !== null) {
+              <p>{{ record.settlement ? 'Settlement amount' : 'Approved amount' }} <strong>{{ claim.currency }} {{ claim.approvedAmount }}</strong></p>
+            }
+            @if (record.settlement) { <p class="hint">Recorded {{ record.settlement.occurredAt | date:'medium' }}</p> }
+            @else if (claim.status === 'APPROVED') { <p class="hint">Awaiting settlement.</p> }
+          </section>
+        }
+        <section class="surface panel">
+          <h2>Incident details</h2>
+          <dl>
+            <div><dt>Claim type</dt><dd>{{ claim.type === 'MOTOR' ? 'Motor' : 'Property' }}</dd></div>
+            <div><dt>Market</dt><dd>{{ claim.market }}</dd></div>
+            <div><dt>Incident date</dt><dd>{{ claim.incidentDate | date:'mediumDate' }}</dd></div>
+            <div><dt>Requested amount</dt><dd>{{ claim.currency }} {{ claim.requestedAmount }}</dd></div>
+            <div><dt>Submitted</dt><dd>{{ claim.createdAt | date:'medium' }}</dd></div>
+            <div><dt>Last updated</dt><dd>{{ claim.updatedAt | date:'medium' }}</dd></div>
+            <div><dt>Assigned officer</dt><dd>{{ claim.officerId ?? 'Awaiting assignment' }}</dd></div>
+          </dl>
+          <h3>Description</h3>
+          <p class="free-text">{{ claim.description }}</p>
+        </section>
+      </div>
+      <section class="surface panel history">
+        <h2>Claim history</h2>
+        <app-claim-history [entries]="claim.history" />
+      </section>
+    </div>
+  }
+}

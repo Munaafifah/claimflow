@@ -1,0 +1,69 @@
+<a class="back-link" routerLink="/claimant/claims">Back to my claims</a>
+<div class="page-title">
+  <div>
+    <h1>Submit a claim</h1>
+    <p>Tell us what happened and how much you’re claiming.</p>
+  </div>
+</div>
+<form class="surface panel claim-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <fieldset [disabled]="busy()">
+    <legend>Incident and claim details</legend>
+    <div class="form-grid">
+      <div class="field">
+        <label for="incident-type">Claim type</label>
+        <select id="incident-type" formControlName="type" required [attr.aria-invalid]="form.controls.type.touched && form.controls.type.invalid" aria-describedby="type-feedback">
+          <option value="">Select a claim type</option><option value="MOTOR">Motor</option><option value="PROPERTY">Property</option>
+        </select>
+        @if (form.controls.type.touched && form.controls.type.invalid) { <span class="field-error" id="type-feedback">Choose motor or property.</span> }
+      </div>
+      <div class="field">
+        <label for="market">Market</label>
+        <select #market id="market" formControlName="market" required (change)="selectMarket(market.value)" [attr.aria-invalid]="form.controls.market.touched && form.controls.market.invalid" aria-describedby="market-feedback">
+          <option value="">Select a market</option>
+          @for (item of markets; track item.code) { <option [value]="item.code">{{ item.name }}</option> }
+        </select>
+        @if (form.controls.market.touched && form.controls.market.invalid) { <span class="field-error" id="market-feedback">Choose a market.</span> }
+      </div>
+      <div class="field">
+        <label for="incident-date">Incident date</label>
+        <input id="incident-date" type="date" formControlName="incidentDate" [max]="today" required [attr.aria-invalid]="form.controls.incidentDate.touched && form.controls.incidentDate.invalid" aria-describedby="date-feedback">
+        @if (form.controls.incidentDate.touched && form.controls.incidentDate.invalid) { <span class="field-error" id="date-feedback">Enter a valid date on or before today.</span> }
+      </div>
+      <div class="field">
+        <label for="claim-currency">Currency</label>
+        <select id="claim-currency" formControlName="currency" required [attr.aria-invalid]="form.controls.currency.touched && form.controls.currency.invalid" aria-describedby="currency-feedback">
+          <option value="">Select a currency</option>
+          @for (item of markets; track item.code) { <option [value]="item.currency">{{ item.currency }}</option> }
+        </select>
+        @if (form.controls.currency.touched && form.controls.currency.invalid) { <span class="field-error" id="currency-feedback">Choose a currency.</span> }
+      </div>
+      <div class="field">
+        <label for="requested-amount">Requested amount</label>
+        <input id="requested-amount" formControlName="requestedAmount" inputmode="decimal" placeholder="0.00" required
+               [attr.aria-invalid]="form.controls.requestedAmount.touched && (form.controls.requestedAmount.invalid || form.hasError('currencyScale'))" aria-describedby="amount-feedback">
+        @if (form.controls.requestedAmount.touched && form.controls.requestedAmount.invalid) {
+          <span class="field-error" id="amount-feedback">Enter an amount greater than zero with at most 14 digits before the decimal point.</span>
+        } @else if (form.controls.requestedAmount.touched && form.hasError('currencyScale')) {
+          <span class="field-error" id="amount-feedback">{{ form.controls.currency.value === 'VND' ? 'Enter a whole amount for VND.' : 'Use at most two decimal places.' }}</span>
+        }
+      </div>
+      <div class="field full-width">
+        <label for="description">What happened?</label>
+        <textarea id="description" formControlName="description" rows="5" maxlength="2000" required placeholder="Describe the incident and the damage."
+                  [attr.aria-invalid]="form.controls.description.touched && form.controls.description.invalid" aria-describedby="description-feedback"></textarea>
+        @if (form.controls.description.touched && form.controls.description.invalid) {
+          <span class="field-error" id="description-feedback">Enter a description of up to 2,000 characters.</span>
+        } @else {
+          <span class="hint" id="description-feedback">Up to 2,000 characters.</span>
+        }
+      </div>
+    </div>
+  </fieldset>
+  @if (error()) { <p class="error-banner" role="alert">{{ error() }}</p> }
+  <div class="actions">
+    @if (!uncertain()) {
+      <button class="button primary" type="submit" [disabled]="busy()">{{ busy() ? 'Submitting…' : 'Submit claim' }}</button>
+    }
+    <a class="button" routerLink="/claimant/claims">{{ uncertain() ? 'Check my claims' : 'Cancel' }}</a>
+  </div>
+</form>

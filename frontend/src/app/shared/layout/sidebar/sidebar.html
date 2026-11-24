@@ -6,7 +6,13 @@
   <nav aria-label="Workspace">
     @if (identity.current().role === 'claimant') {
       <a routerLink="/claimant" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">
-        <app-icon name="overview" /> Claim overview
+        <app-icon name="overview" /> Overview
+      </a>
+      <a routerLink="/claimant/claims/new" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <app-icon name="plus" /> Submit Claim
+      </a>
+      <a routerLink="/claimant/claims" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">
+        <app-icon name="claims" /> My Claims
       </a>
     } @else {
       <a routerLink="/officer" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">

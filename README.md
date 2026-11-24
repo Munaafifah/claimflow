@@ -37,7 +37,7 @@ Demo identities are `claimant-1`, `claimant-2`, `officer-1`, and `officer-2`. Th
 
 The backend records claim events in a transactional outbox. Enable the `kafka` Spring profile to publish pending events and record local demo notifications. See [Kafka setup and manual verification](docs/KAFKA.md), [the API contract](docs/API.md) and [the architecture](docs/ARCHITECTURE.md).
 
-## Preview the Angular foundation
+## Run the Angular portal
 
 Keep Spring Boot running on port 8080. Start Angular from the repository root in another PowerShell terminal.
 
@@ -49,6 +49,6 @@ npm.cmd start
 
 Run `npm.cmd ci` for the first install or when dependencies change. Stop any running Angular dev server with **Ctrl+C** before reinstalling, since it can hold `esbuild.exe` open on Windows. For subsequent launches, use `npm.cmd start`.
 
-Open `http://localhost:4200`. The **Demo identity** selector switches between claimant and staff preview routes. The claimant and officer previews show live claim lists. The Management preview shows summary counts from the dashboard endpoint. The development server forwards `/api/**` to Spring Boot.
+Open `http://localhost:4200`. Use **Demo identity** to choose a claimant and try the overview, submission form, or claims list. The officer and Management previews show live data. The development server forwards `/api/**` to Spring Boot.
 
 See [frontend setup and scope](frontend/README.md) for tests and troubleshooting.
