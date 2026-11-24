@@ -1,54 +1,82 @@
 # ClaimFlow
 
-ClaimFlow is a local insurance claims demo for motor and property incidents. The backend covers submission, tracking, officer pickup, information requests, decisions and settlement. Staff can also view team workload, claim outcomes and estimated outstanding exposure by currency.
+ClaimFlow is a local insurance claims demo. Claimants submit motor and property incidents, track their claims and answer requests for information. Officers pick up and assess claims, record decisions, and view team workload, outcomes and estimated liability.
 
-## Run the backend locally
+## Technology stack
 
-Install Java 21 and run these commands from the repository in PowerShell. The Maven Wrapper downloads build dependencies on its first run.
+- **Frontend** — Angular 21, TypeScript and SCSS
+- **Backend** — Java 21, Spring Boot 3.5, Spring Data JPA and file-backed H2
+- **Communication** — REST over HTTP, Apache Kafka and Docker Compose
+- **Build and testing** — Maven Wrapper, npm, JUnit and Vitest
 
-```powershell
-cd backend
-.\mvnw.cmd verify
-.\mvnw.cmd spring-boot:run
+## Prerequisites
+
+- Git, a Java 21 JDK, and Node.js 24 with npm 11. Put their commands on your PATH.
+- Docker with the Compose plugin. Start Docker Desktop or the Docker engine for the Kafka demo.
+- Internet access on the first run to download Maven, npm dependencies and the Kafka image.
+- Local ports 4200 for Angular, 8080 for Spring Boot, and 9092 for Kafka. Maven and Angular CLI are supplied by the wrapper and project dependencies.
+
+Clone the [ClaimFlow repository](https://github.com/Munaafifah/claimflow).
+
+```sh
+git clone https://github.com/Munaafifah/claimflow.git ClaimFlow
+cd ClaimFlow
 ```
 
-The API listens on `http://127.0.0.1:8080`. The application writes data to `backend/data` when started as shown. Tests use an in-memory H2 database.
+Run commands from the checkout root unless a command changes directory.
 
-Open [claimflow.http](claimflow.http) in VS Code with the REST Client extension. Click **Send Request** in order within each scenario. The motor scenario covers information requests, approval and settlement. The property scenario covers rejection. The dashboard examples use data from both scenarios and add one outstanding claim. Each example lists its expected response. The motor and property submission requests supply claim IDs automatically.
-
-You can also submit and pick up a claim from PowerShell.
+## Windows quick start
 
 ```powershell
-$body = @{
-    type = 'MOTOR'
-    market = 'MY'
-    incidentDate = (Get-Date -Format 'yyyy-MM-dd')
-    description = 'Demo incident'
-    requestedAmount = '120.50'
-    currency = 'MYR'
-} | ConvertTo-Json
-$claim = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8080/api/claims' `
-    -Headers @{'X-Demo-User-Id' = 'claimant-1'} -ContentType 'application/json' -Body $body
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8080/api/claims/$($claim.id)/actions" `
-    -Headers @{'X-Demo-User-Id' = 'officer-1'} -ContentType 'application/json' -Body '{"action":"PICK_UP"}'
+.\start.ps1
 ```
 
-Demo identities are `claimant-1`, `claimant-2`, `officer-1`, and `officer-2`. The header is caller-controlled and provides no authentication. Use fictional information.
-
-The backend records claim events in a transactional outbox. Enable the `kafka` Spring profile to publish pending events and record local demo notifications. See [Kafka setup and manual verification](docs/KAFKA.md), [the API contract](docs/API.md) and [the architecture](docs/ARCHITECTURE.md).
-
-## Run the Angular portal
-
-Keep Spring Boot running on port 8080. Start Angular from the repository root in another PowerShell terminal.
+The launcher installs frontend dependencies from the lockfile, packages the backend, starts Kafka and checks the Angular API proxy. It prints the URLs and keeps logs in `.claimflow-run/`. If PowerShell blocks local scripts, run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\start.ps1` for this invocation.
 
 ```powershell
-cd frontend
-npm.cmd ci
-npm.cmd start
+.\stop.ps1
 ```
 
-Run `npm.cmd ci` for the first install or when dependencies change. Stop any running Angular dev server with **Ctrl+C** before reinstalling, since it can hold `esbuild.exe` open on Windows. For subsequent launches, use `npm.cmd start`.
+Stop uses recorded process IDs and start times. It stops only the Kafka container the launcher started. Claims in `backend/data/` and the Docker volume are preserved. If local scripts are blocked, use `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\stop.ps1`. To avoid a port conflict in a separate checkout, use `.\start.ps1 -BackendPort 18084 -FrontendPort 4214 -KafkaPort 19094` and use the printed URLs. For Kafka console commands, use the selected Kafka port.
 
-Open `http://localhost:4200`. Use **Demo identity** to switch between claimant tracking and the officer worklist. Management displays live workload, claim outcomes and exposure by currency. The development server forwards `/api/**` to Spring Boot.
+## Manual startup
 
-See [frontend setup and scope](frontend/README.md) for tests and troubleshooting.
+Use three terminals. In the first, start Kafka from the checkout root.
+
+```sh
+docker compose up -d kafka
+```
+
+In the second terminal, start Spring Boot. In the third, start Angular.
+
+| Terminal | Windows PowerShell | macOS or Linux |
+| --- | --- | --- |
+| Backend | `cd backend` then `.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=kafka"` | `cd backend` then `./mvnw spring-boot:run -Dspring-boot.run.profiles=kafka` |
+| Frontend | `cd frontend` then `npm.cmd ci` and `npm.cmd start -- --host 127.0.0.1` | `cd frontend` then `npm ci` and `npm start -- --host 127.0.0.1` |
+
+Wait for both servers to start. Use **Ctrl+C** in the Angular and Spring Boot terminals to stop them. From the root, run `docker compose stop kafka` to stop the broker while keeping its data. Stop Angular before reinstalling dependencies, since Windows can lock `esbuild.exe`.
+
+For a REST-only demo, skip Docker and omit the Kafka profile when starting Spring Boot. The app still queues lifecycle events for later publication.
+
+## Open the app
+
+| Address | Use |
+| --- | --- |
+| [http://127.0.0.1:4200](http://127.0.0.1:4200) | Angular application |
+| `http://127.0.0.1:8080/api` | Spring Boot API. Use a resource path such as `/api/claims` and send the demo actor header. |
+| `localhost:9092` | Kafka broker for local verification |
+
+Use the app's **Demo identity** selector. `claimant-1` and `claimant-2` can see their own claims. `officer-1` and `officer-2` can use the worklist and Management dashboard. HTTP examples pass the same IDs in `X-Demo-User-Id`. New databases start with an empty claims list.
+
+## Review and verify
+
+- [Demonstration guide](docs/DEMO.md) walks through the claimant, officer, management and Kafka flows.
+- [Architecture](docs/ARCHITECTURE.md) explains the system boundaries and trade-offs.
+- [API contract](docs/API.md), [HTTP examples](claimflow.http), and [Kafka guide](docs/KAFKA.md) show how to verify each interface.
+- [AI working journal](AI_JOURNAL.md) records the decisions, manual reviews and verification results.
+
+Run `./mvnw verify` from `backend` on macOS/Linux or `.\mvnw.cmd verify` in Windows PowerShell. From `frontend`, run `npm test -- --watch=false` and `npm run build` (use `npm.cmd` in Windows PowerShell). Automated backend tests use in-memory H2 and can run with Kafka stopped.
+
+## Known limitations
+
+The caller-controlled demo identity provides no real authentication. Use fictional data. The system records settlement decisions and local notification records, with no payment transfer, email, SMS or notification inbox. Information requests and replies are text only. The dashboard is designed for a small local dataset. The included Kafka setup uses a single broker, and Angular uses a local development proxy. Production load, security and cross-browser compatibility are outside the verified scope. The submission audit reported moderate advisories in the frontend development toolchain. The runtime-only npm audit reported zero advisories.

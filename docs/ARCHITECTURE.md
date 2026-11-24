@@ -1,23 +1,34 @@
-# Proposed architecture
+# ClaimFlow architecture
 
-Use a Java 21 Spring Boot modular monolith with Spring Data JPA and file-backed H2. One process and one database transaction can enforce ownership, update claim state and append history. H2 keeps local setup small and preserves claims across restarts. Use the Maven Wrapper and add one Angular app with role-specific routes after the API is verified. The handover's layered backend and feature-based frontend directories are the starting layout. Use OpenAPI if time permits and keep the written API contract current either way.
+## Application boundaries
 
-REST handles queries and commands because the caller needs the committed state or a clear validation error. Kafka carries asynchronous workflow events for downstream consumers. The database remains authoritative for claim tracking and dashboards. A notification adapter could later subscribe independently. The MVP displays decisions in the claimant view.
+A Java 21 Spring Boot modular monolith contains claims, reporting and event handling. One service and one file-backed H2 database keep setup small and allow ownership checks, workflow changes and history to share a transaction. Spring Data JPA persists claims. Optimistic locking prevents two officers from both picking up the same claim. One Angular app provides claimant, officer and management routes.
 
-The dashboard uses one read-only repository query to fetch claims and their history together. The service calculates the current snapshot and historical outcomes in memory, which keeps the business rules visible and avoids a query per claim. This works for the local demo dataset. Larger datasets would benefit from database-side aggregation and a query restricted to outcome events in the selected period.
+## REST and Kafka
 
-The claim transaction saves an outbox row alongside the claim and history for each published milestone. A single publisher in the Kafka profile retries the oldest pending event per claim and marks it published after broker acknowledgement. A crash between acknowledgement and marking can produce a duplicate. The demo notification consumer inserts a durable record keyed by event ID, so replay cannot create a second notification. The claim API remains usable during a Kafka outage.
+REST handles reads and commands that need an immediate answer, such as `POST /api/claims` and `GET /api/dashboard`. Spring Boot validates each command and returns the committed state or an error. The Angular development server proxies `/api/**` to Spring Boot. H2 is authoritative for claim details, history and reporting.
 
-Use seeded demo actors. Every backend operation checks the applicable role, claimant ownership and staff assignment. The actor selector represents an identity supplied by the caller and provides no authentication. Keep this local and use fictional data.
+Kafka handles follow-up work after a lifecycle change commits. One topic, `claimflow.claim-events.v1`, carries seven lifecycle events. Each message is keyed by claim ID, and the publisher sends earlier pending events for that claim first. Event messages contain identifiers, status and timing, while incident details and claimant messages remain in H2.
 
-## Data model
+## Transactional outbox and duplicate handling
 
-The first backend milestone uses fixed demo actor IDs in the service and maps history as an ordered JPA collection stored in a separate table. The proposed user and outbox entities describe possible later persistence work.
+The claim update, history entry and outbox row commit together. A rollback creates no publishable event. A background publisher retries pending rows and marks each published after broker acknowledgement. The claim API can continue writing while Kafka is offline.
 
-| Entity | Fields and relationships |
+A crash after Kafka acknowledges a message may cause that row to be sent again. Retries reuse the event ID, and the consumer uses that ID as the primary key of the local notification record. Replay can produce another Kafka record while keeping one notification. This is at-least-once delivery with an idempotent database effect.
+
+## Reporting
+
+The dashboard reads claims and history in one repository query and aggregates them in memory for the local dataset. Counts for approvals, rejections and settlements come from history and are attributed to the actor who took each action. Average resolution time measures submission to settlement or rejection and is weighted across those resolved claims. Date filters apply only to historical performance.
+
+Estimated outstanding exposure uses the requested amount before approval and the approved amount while awaiting settlement. Rejected and settled claims contribute zero. The backend sums exact decimal amounts separately by currency, and the UI displays the returned values without conversion. This is a demo exposure estimate.
+
+## Stored records
+
+| Record | Purpose |
 | --- | --- |
-| User | ID, display name, role. One claimant can submit many claims and one officer can hold many assignments. |
-| Claim | ID, claimant ID, nullable assigned officer ID, type, market, incident date, description, currency, requested amount, nullable approved amount, status, UTC creation and update times, version. Use optimistic locking to turn concurrent stale writes into a conflict. |
-| Claim history | ID, claim ID, actor ID, action, optional previous status, new status, claimant-visible message, UTC timestamp. Multiple append-only rows per claim, written with the state change. |
-| Event outbox | Event ID, claim ID, history sequence, event type, resulting status, occurrence time, nullable publication time. |
-| Demo notification | Event ID as primary key, claim ID and event type. Stores one record per claimant-facing event. |
+| Claim | Incident, market, type, claimant and assigned officer IDs, money, status and version |
+| History | Ordered workflow entries with actor, status, time and any message |
+| Outbox | Stable event ID, claim sequence, event type, resulting status and publication time |
+| Notification | One durable local record per claimant-facing event ID |
+
+The demo uses four fixed actor IDs. The backend checks the supplied role, ownership and assignment, and the caller chooses the demo identity. See the [README](../README.md) for the verified scope.

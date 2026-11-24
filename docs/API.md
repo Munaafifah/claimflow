@@ -1,4 +1,4 @@
-# Proposed API contract
+# API contract
 
 Send JSON over HTTP under `/api`. Supply the seeded actor ID in `X-Demo-User-Id`. Return ISO 8601 dates and UTC timestamps. Represent money as decimal strings paired with a currency code.
 

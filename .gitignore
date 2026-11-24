@@ -3,5 +3,9 @@ node_modules/
 dist/
 .angular/
 backend/data/
+.claimflow-run/
+.env.*
+*.mv.db
+*.trace.db
 .env
 *.log
