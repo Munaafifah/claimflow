@@ -153,3 +153,36 @@ X-Demo-User-Id: {{propertyOfficer}}
 Content-Type: application/json
 
 {"action":"SETTLE"}
+
+### Dashboard 1 — Add an outstanding SGD claim. Expect 201 SUBMITTED.
+POST {{baseUrl}}/claims
+X-Demo-User-Id: {{propertyClaimant}}
+Content-Type: application/json
+
+{
+  "type": "PROPERTY",
+  "market": "SG",
+  "incidentDate": "2025-11-04",
+  "description": "A storm damaged the roof covering.",
+  "requestedAmount": "850.50",
+  "currency": "SGD"
+}
+
+### Dashboard 2 — Read the team's current workload, estimated exposure and all-time performance. Expect 200.
+# On a fresh database after all preceding scenarios, expect 3 total, 1 active,
+# 1 unassigned, 2 completed, exposure SGD 850.5, and one of each performance outcome.
+GET {{baseUrl}}/dashboard
+X-Demo-User-Id: {{motorOfficer}}
+
+### Dashboard 3 — Filter historical performance to an earlier UTC period. Expect 200.
+# With the examples run today, performance counts are zero and the current snapshot is unchanged.
+GET {{baseUrl}}/dashboard?from=2025-01-01T00:00:00Z&to=2025-02-01T00:00:00Z
+X-Demo-User-Id: {{propertyOfficer}}
+
+### Dashboard 4 — Supply only one date boundary. Expect 400.
+GET {{baseUrl}}/dashboard?from=2025-01-01T00:00:00Z
+X-Demo-User-Id: {{motorOfficer}}
+
+### Dashboard 5 — Try reading the staff dashboard as a claimant. Expect 403.
+GET {{baseUrl}}/dashboard
+X-Demo-User-Id: {{motorClaimant}}

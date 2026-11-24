@@ -15,6 +15,9 @@ import java.time.Instant;
 import java.util.Currency;
 import java.util.List;
 
+import static com.claimflow.service.DemoActors.forbidden;
+import static com.claimflow.service.DemoActors.isOfficer;
+
 @Service
 @Transactional(readOnly = true)
 public class ClaimService {
@@ -90,14 +93,6 @@ public class ClaimService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Claim not found"));
     }
 
-    private static boolean isOfficer(String actor) {
-        return switch (actor) {
-            case "officer-1", "officer-2" -> true;
-            case "claimant-1", "claimant-2" -> false;
-            default -> throw forbidden();
-        };
-    }
-
     private static BigDecimal money(String value, String code) {
         Currency currency;
         try {
@@ -113,10 +108,6 @@ public class ClaimService {
             throw badRequest("Amount must be positive and use the currency's decimal scale");
         }
         return amount;
-    }
-
-    private static ResponseStatusException forbidden() {
-        return new ResponseStatusException(HttpStatus.FORBIDDEN, "Actor cannot perform this operation");
     }
 
     private static ResponseStatusException badRequest(String message) {

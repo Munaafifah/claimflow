@@ -1,6 +1,6 @@
 # ClaimFlow
 
-ClaimFlow is a local insurance claims demo for motor and property incidents. The current backend milestone covers submission, tracking, officer pickup, information requests, decisions and settlement.
+ClaimFlow is a local insurance claims demo for motor and property incidents. The backend covers submission, tracking, officer pickup, information requests, decisions and settlement. Staff can also view team workload, claim outcomes and estimated outstanding exposure by currency.
 
 ## Run the backend locally
 
@@ -14,7 +14,7 @@ cd backend
 
 The API listens on `http://127.0.0.1:8080`. The application writes data to `backend/data` when started as shown. Tests use an in-memory H2 database.
 
-Open [claimflow.http](claimflow.http) in VS Code with the REST Client extension. Click **Send Request** in order within each scenario. The motor scenario covers information requests, approval and settlement. The property scenario covers rejection. Each example lists its expected response, and the two submit requests supply claim IDs automatically.
+Open [claimflow.http](claimflow.http) in VS Code with the REST Client extension. Click **Send Request** in order within each scenario. The motor scenario covers information requests, approval and settlement. The property scenario covers rejection. The dashboard examples use data from both scenarios and add one outstanding claim. Each example lists its expected response. The motor and property submission requests supply claim IDs automatically.
 
 You can also submit and pick up a claim from PowerShell.
 
@@ -35,4 +35,4 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8080/api/claims/$($claim.i
 
 Demo identities are `claimant-1`, `claimant-2`, `officer-1`, and `officer-2`. The header is caller-controlled and provides no authentication. Use fictional information.
 
-Workload and exposure reporting, Kafka, and Angular are planned milestones. See [the API contract](docs/API.md) and [the architecture proposal](docs/ARCHITECTURE.md).
+Kafka and Angular are planned milestones. See [the API contract](docs/API.md) and [the architecture proposal](docs/ARCHITECTURE.md).

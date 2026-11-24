@@ -21,3 +21,21 @@
 - **AI implementation choices** — Used one REST Client file with a motor claim that reaches settlement, a property claim that is rejected, and examples of rejected requests. Named submission requests supply IDs so the examples can be repeated with fresh claims.
 - **Candidate decisions** — The candidate requested one file with runnable samples. No additional challenges or overrides were stated.
 - **Verification and outcome** — Sent all 22 requests from the file to the packaged application on a temporary local port with in-memory H2. All expected HTTP status codes matched. Also checked the workflow states, list results, approved amount and final history lengths.
+
+## 24 November 2026, 15:56 MYT · Business rules review
+
+- **Actual request** — “just to double check care to check all the request if it performs the right business logic”
+- **AI approach** — Compared the examples with the workflow rules and replayed the file against a separate instance with in-memory H2. Checked persisted claim details before and after each expected failure.
+- **Verification and outcome** — All 22 examples matched their expected status codes. Verified ownership, officer filters and assignment, the decision amounts and reasons, and the ordered history entries. All five rejected requests left the affected claim unchanged. The screenshot showed an approved claim in the summary response, where history is empty by design.
+
+## 24 November 2026, 16:07 MYT · Dashboard design review
+
+- **Candidate proposal** — Finish the backend before Kafka and Angular. Report claim totals, officer workload and performance, average resolution time if supported, outstanding claims by market, type and status, and liability exposure. Use requested amounts before approval and approved amounts pending settlement. Exclude terminal claims, group by currency, and use `BigDecimal`. Put reporting in dedicated dashboard classes.
+- **AI recommendation** — Keep the proposed exposure rules and identify the result as a demo estimate. Count performance from dated history actions, attribute actions to their recorded actor, and measure resolution from submission to settlement or rejection. Return an all-time snapshot with optional UTC bounds for performance only. Aggregate in a dedicated read-only service using one repository query that fetches claims and history together for the local demo.
+- **Verification and decision status** — Inspected the claim entity, history mapping, repository and existing requirements and API proposal. The current model contains the needed amounts, classifications, ownership and timestamps. No schema changes are proposed. Design approval, implementation and reporting tests are pending.
+
+## 24 November 2026 · Dashboard implementation
+
+- **Candidate decision** — Approved the dashboard design and asked to proceed. No overrides were stated.
+- **AI implementation choices** — Added the dedicated dashboard controller, service and response contracts. Shared the fixed actor IDs with the claim service so both endpoints apply the same demo roles. Used one read-only fetch query and preserved the existing database schema and lifecycle.
+- **Verification and outcome** — All seven integration tests passed. Maven initially failed to repackage the workspace JAR because Windows reported it was in use. A fresh temporary build passed `verify` and produced an executable JAR. Replayed all 27 HTTP examples against that JAR over localhost with in-memory H2. The dashboard totals, currency exposure, date filter and expected error responses matched.
